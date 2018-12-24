@@ -94,12 +94,12 @@ void setup() {
   Serial.println("Boot");
 
   if (! musicPlayer.begin()) { // initialise the music player
-     Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
-     while (1);
+    Serial.println(F("Couldn't find VS1053, do you have the right pins defined?"));
+    while (1);
   }
   Serial.println(F("VS1053 found"));
 
-   if (!SD.begin(CARDCS)) {
+  if (!SD.begin(CARDCS)) {
     Serial.println(F("SD failed, or not present"));
     while (1);  // don't do anything more
   }
@@ -110,8 +110,8 @@ void setup() {
   }
 
   // Setup previous-next buttons
-   pinMode(NEXT_SONG_PIN, INPUT_PULLUP);
-   pinMode(PREVIOUS_SONG_PIN, INPUT_PULLUP);
+  pinMode(NEXT_SONG_PIN, INPUT_PULLUP);
+  pinMode(PREVIOUS_SONG_PIN, INPUT_PULLUP);
 
   // Set volume for left, right channels. lower numbers == louder volume!
   musicPlayer.setVolume(outputValue,outputValue);
