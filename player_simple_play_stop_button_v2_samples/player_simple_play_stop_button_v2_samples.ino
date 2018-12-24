@@ -1,4 +1,4 @@
-/*************************************************** 
+/***************************************************
   Written by Benoit Tigeot, thanks Adafruit
   BSD license, all text above must be included in any redistribution
  ****************************************************/
@@ -34,32 +34,60 @@ int analog_button_pins_count = 5;
 
 static const int delay_between_input_check = 200; //ms
 
-const long inactivity_timeout = 4000; // 240000; //ms = 4minutes
+const long inactivity_timeout = 240000; //ms = 4minutes
 unsigned long lastAction;
 
 uint8_t outputValue = 50;
 bool playing = false;
 
-static const int number_of_tracks = 14;
+// To properly random sfx at boot
+int number_of_boot_sfx;
+
+// To properly loop when doing previous-next
+int number_of_tracks;
+
 int last_track_played = 1;
+
+File root;
 
 Adafruit_VS1053_FilePlayer musicPlayer = Adafruit_VS1053_FilePlayer(SHIELD_RESET, SHIELD_CS, SHIELD_DCS, DREQ, CARDCS);
 
-void play(int number, String type) {
-  if (type == "track") { last_track_played = number; }
+String mp3_name(int number, String type) {
   type += (number / 100) % 10;
   type += (number / 10) % 10;
   type += number % 10;
   type += ".mp3";
-  Serial.print("Starting to play ");
+  return type;
+}
+
+int number_of_files(String type) {
+  int count = 0;
+  for (int i = 1; i < 1000; i++) {
+    if (SD.exists(mp3_name(i, type))) {
+      count += 1;
+    } else {
+      break;
+    }
+  }
+  Serial.print(count);
+  Serial.print(" number of ");
   Serial.println(type);
+  return count;
+}
+
+void play(int number, String type) {
+  // remember last_track_played for previous next button
+  if (type == "track") { last_track_played = number; }
+
+  String mp3_filename = mp3_name(number, type);
+  Serial.print("Starting to play ");
+  Serial.println(mp3_filename);
   musicPlayer.stopPlaying();
-  musicPlayer.startPlayingFile(type.c_str());
+  musicPlayer.startPlayingFile(mp3_filename.c_str());
 
   playing = true;
   lastAction = millis();
 }
-
 
 void setup() {
   Serial.begin(9600);
@@ -70,7 +98,7 @@ void setup() {
      while (1);
   }
   Serial.println(F("VS1053 found"));
-  
+
    if (!SD.begin(CARDCS)) {
     Serial.println(F("SD failed, or not present"));
     while (1);  // don't do anything more
@@ -91,11 +119,15 @@ void setup() {
   // If DREQ is on an interrupt pin (on uno, #2 or #3) we can do background
   // audio playing
   musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
-  
+
+  // Set the number of sfx and track
+  number_of_tracks = number_of_files("track");
+  number_of_boot_sfx = number_of_files("sfx");
+
   // Set randomSeed for random boot sound
   randomSeed(analogRead(0));
-  // play random boot sound form file named sfx00?.mp3
-  play(random(1,10), "sfx");
+  // play random boot sound from file named sfx00?.mp3
+  play(random(1,number_of_boot_sfx + 1), "sfx");
 }
 
 void set_volume() {
@@ -161,7 +193,7 @@ void loop() {
     lastAction = millis();
     if (musicPlayer.stopped()) {
       Serial.println("Song ended.");
-      playing = false;  
+      playing = false;
     }
   }
 
