@@ -34,7 +34,7 @@ int analog_button_pins_count = 5;
 
 static const int delay_between_input_check = 200; //ms
 
-const int inactivity_timeout = 4000; //240000 ms = 4minutes
+const long inactivity_timeout = 4000; // 240000; //ms = 4minutes
 unsigned long lastAction;
 
 uint8_t outputValue = 50;
@@ -91,9 +91,6 @@ void setup() {
   // If DREQ is on an interrupt pin (on uno, #2 or #3) we can do background
   // audio playing
   musicPlayer.useInterrupt(VS1053_FILEPLAYER_PIN_INT);  // DREQ int
-  
-  // Track inactivity even if no sound play
-  lastAction = millis();
   
   // Set randomSeed for random boot sound
   randomSeed(analogRead(0));
