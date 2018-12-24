@@ -34,7 +34,7 @@ int analog_button_pins_count = 5;
 
 static const int delay_between_input_check = 200; //ms
 
-#define INACTIVITY_TIMEOUT 240000 //ms = 4minutes
+const int inactivity_timeout = 4000; //240000 ms = 4minutes
 unsigned long lastAction;
 
 uint8_t outputValue = 50;
@@ -56,6 +56,7 @@ void play(int number, String type) {
   musicPlayer.stopPlaying();
   musicPlayer.startPlayingFile(type.c_str());
 
+  playing = true;
   lastAction = millis();
 }
 
@@ -101,7 +102,6 @@ void setup() {
 }
 
 void set_volume() {
-
   int sensorValue = analogRead(VOLUME_POT_PIN);
   // map it to the range of the analog out:
   outputValue = map(sensorValue, 0, 1023, 0, 100);
@@ -135,7 +135,6 @@ void loop() {
   for (int i = 0; i < 8; i++) {
     if(musicPlayer.GPIO_digitalRead(i) == 1){
       play(i, "track");
-      playing = true;
     }
   }
 
@@ -144,7 +143,6 @@ void loop() {
     if (digitalRead(analog_button_pins[i]) == LOW) {
       Serial.print("Analog input ");
       play(i + 8, "track");
-      playing = true;
     }
   }
 
@@ -153,7 +151,6 @@ void loop() {
     Serial.println("Next track.");
     play(next_song_id(last_track_played), "track");
     delay(300); //ms. avoid skipping tracks too fast
-    playing = true;
   }
 
   // Previous track
@@ -161,7 +158,6 @@ void loop() {
     Serial.println("Previous track.");
     play(previous_song_id(last_track_played), "track");
     delay(300); //ms. avoid skipping tracks too fast
-    playing = true;
   }
 
   if (playing) {
@@ -174,7 +170,7 @@ void loop() {
 
   unsigned long sinceLast = millis() - lastAction;
   if (sinceLast < 0) lastAction = millis();
-  else if (sinceLast > INACTIVITY_TIMEOUT) {
+  else if (sinceLast > inactivity_timeout) {
     Serial.println("Turing off..");
     digitalWrite(OFF_PIN, HIGH);
     lastAction = millis();
