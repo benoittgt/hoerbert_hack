@@ -132,9 +132,12 @@ void setup() {
 
 void set_volume() {
   int sensorValue = analogRead(VOLUME_POT_PIN);
+  Serial.print(" sensorValue ");
+  Serial.println(sensorValue);
   // map it to the range of the analog out:
-  outputValue = map(sensorValue, 0, 1023, 0, 100);
-
+  outputValue = map(sensorValue, 0, 1023, 30, 100);
+  Serial.print(" outputValue ");
+  Serial.println(outputValue);
   // change the analog out value:
   musicPlayer.setVolume(outputValue,outputValue);
 }
